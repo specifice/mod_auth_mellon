@@ -126,6 +126,7 @@ static char *am_generate_metadata(apr_pool_t *p, request_rec *r)
     char *cert = "";
     const char *sp_entity_id;
 
+    url = am_adjust_url_secure_context(r, url);
     sp_entity_id = cfg->sp_entity_id ? cfg->sp_entity_id : url;
 
     if (cfg->sp_cert_file) {
@@ -1696,6 +1697,8 @@ static int am_handle_reply_common(request_rec *r, LassoLogin *login,
     const char *idp;
 
     url = am_reconstruct_url(r);
+    url = am_adjust_url_secure_context(r, url);
+
     chr = strchr(url, '?');
     if (! chr) {
         chr = strchr(url, ';');
@@ -2988,6 +2991,7 @@ static int am_send_login_authn_request(request_rec *r, const char *idp,
     LassoHttpMethod http_method;
     char *destination_url;
     char *assertion_consumer_service_url;
+    char *adjusted_assertion_consumer_service_url;
     LassoLogin *login;
 
     /* Add cookie for cookie test. We know that we should have
@@ -3033,6 +3037,7 @@ static int am_send_login_authn_request(request_rec *r, const char *idp,
     assertion_consumer_service_url =
         lasso_provider_get_assertion_consumer_service_url(
             LASSO_PROVIDER(server), NULL);
+    adjusted_assertion_consumer_service_url = am_adjust_url_secure_context(r, assertion_consumer_service_url);
 
     ret = am_init_authn_request_common(r, &login, idp, http_method,
                                        destination_url,
@@ -3040,7 +3045,10 @@ static int am_send_login_authn_request(request_rec *r, const char *idp,
                                        return_to_url, is_passive);
 
     g_free(destination_url);
-    g_free(assertion_consumer_service_url);
+    if (adjusted_assertion_consumer_service_url != assertion_consumer_service_url) {
+	   g_free(assertion_consumer_service_url);
+	   assertion_consumer_service_url = adjusted_assertion_consumer_service_url;
+    }
 
     if (ret != OK) {
         if (login) {

@@ -249,6 +249,9 @@ typedef struct am_dir_cfg_rec {
     /* List of domains we can redirect to. */
     const char * const *redirect_domains;
 
+    /* Name of secure context propagation header. */
+    const char *secure_context_header;
+
 } am_dir_cfg_rec;
 
 /* Bitmask for PAOS service options */
@@ -392,6 +395,7 @@ void am_delete_request_session(request_rec *r, am_cache_entry_t *session);
 
 
 char *am_reconstruct_url(request_rec *r);
+char *am_adjust_url_secure_context(request_rec *r, char *url);
 int am_validate_redirect_url(request_rec *r, const char *url);
 int am_check_permissions(request_rec *r, am_cache_entry_t *session);
 void am_set_cache_control_headers(request_rec *r);

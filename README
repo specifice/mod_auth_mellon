@@ -552,6 +552,16 @@ MellonPostCount 100
         #  MellonRedirectDomains [self]
         MellonRedirectDomains [self]
 
+        # This option controls whether to include a list of IDP's when
+        # sending an ECP PAOS <AuthnRequest> message to an ECP client.
+        MellonECPSendIDPList Off
+
+        # Name of the header containing secure context (protocol) information,
+        # for example "X-Forwarded-Proto". Needed when SSL termination is done
+        # by reverse proxy in front of Apache, and Apache is used only as a container
+        # for auth_mellon.
+        # Default is unset.
+        #MellonSecureContextHeader X-Forwarded-Proto
 </Location>
 
 

@@ -1380,6 +1380,17 @@ const command_rec auth_mellon_commands[] = {
         OR_AUTHCFG,
         "List of domains we can redirect to."
         ),
+    AP_INIT_TAKE1(
+        "MellonSecureContextHeader",
+                ap_set_string_slot,
+                (void *)APR_OFFSETOF(am_dir_cfg_rec, secure_context_header),
+                OR_AUTHCFG,
+        "Name of the header containing secure context (protocol) information, "
+        " for example \"X-Forwarded-Proto\". Needed when SSL termination is done "
+        " by reverse proxy in front of Apache, and Apache is used only as a container "
+        " for auth_mellon."
+        " Default is unset."
+        ),
     {NULL}
 };
 
@@ -1481,6 +1492,7 @@ void *auth_mellon_dir_config(apr_pool_t *p, char *d)
 
     dir->ecp_send_idplist = inherit_ecp_send_idplist;
 
+    dir->secure_context_header = NULL;
     return dir;
 }
 
@@ -1721,6 +1733,10 @@ void *auth_mellon_dir_merge(apr_pool_t *p, void *base, void *add)
          add_cfg->redirect_domains :
          base_cfg->redirect_domains);
 
+    new_cfg->secure_context_header =
+		    (add_cfg->secure_context_header ?
+		             add_cfg->secure_context_header :
+		             base_cfg->secure_context_header);
     return new_cfg;
 }
 

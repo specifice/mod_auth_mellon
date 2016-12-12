@@ -51,6 +51,31 @@ char *am_reconstruct_url(request_rec *r)
     return url;
 }
 
+/* This function is used to adjust url protocol to the one passed in
+ * secure context propagation request header (if any present).
+ *
+ * Parameters:
+ *  request_rec *r       The current request.
+ *  char *url            The url to adjust.
+ *
+ * Returns:
+ *  A string containing the input url with protocol adjusted to header value
+ *  The string is allocated from r->pool.
+ */
+char *am_adjust_url_secure_context(request_rec *r, char *url)
+{
+    const char *protocol;
+    am_dir_cfg_rec *cfg = am_get_dir_cfg(r);
+    if (cfg->secure_context_header == NULL) {
+        return url;
+    }
+    protocol = apr_table_get(r->headers_in, cfg->secure_context_header);
+    if (protocol != NULL && strncasecmp(url, protocol, strlen(protocol)) != 0) {
+        url = apr_psprintf(r->pool, "%s%s", protocol, strstr(url, "://"));
+    }
+    return url;
+}
+
 /* Get the hostname of the current request.
  *
  * Parameters:
